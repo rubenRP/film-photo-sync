@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Sync dates and GPS coordinates from iPhone photos to film scans. Perfect for organizing your analog photography in Apple Photos." />
+    <meta name="theme-color" content="#0f0f10" />
+    <title>Film Photo Sync - Match Film Scans to iPhone Timestamps</title>
+  </head>
+  <body>
+    <div id="login-overlay" class="login-overlay">
+      <div class="landing-container">
+        <div class="landing-hero">
+          <img src="/logo.png" alt="Film Photo Sync" class="landing-logo" />
+          <h1>Film Photo Sync</h1>
+          <p class="landing-tagline">
+            Sync dates and GPS from your iPhone to film scans
+          </p>
+        </div>
+
+        <div class="landing-features">
+          <div class="feature-card">
+            <div class="feature-icon">📷</div>
+            <h3>Timeline Matching</h3>
+            <p>Use iPhone photos as time anchors to accurately date your film scans</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📍</div>
+            <h3>GPS Coordinates</h3>
+            <p>Transfer location data so your photos appear on the map in Apple Photos</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🎞️</div>
+            <h3>TIFF Support</h3>
+            <p>Works with high-quality TIFF scans, preserving original image data</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🔒</div>
+            <h3>100% Private</h3>
+            <p>All processing happens in your browser. No uploads to any server</p>
+          </div>
+        </div>
+
+        <div class="login-card">
+          <h2>Sign In</h2>
+          <p>Enter password to access the app</p>
+          <form id="login-form">
+            <input
+              type="password"
+              id="login-password"
+              placeholder="Password"
+              autocomplete="current-password"
+              required
+            />
+            <button type="submit" class="primary-btn">Continue</button>
+          </form>
+          <p id="login-error" class="login-error hidden">Invalid password</p>
+        </div>
+
+        <footer class="landing-footer">
+          <p>Built for film photographers who want their scans organized properly</p>
+        </footer>
+      </div>
+    </div>
+
+    <div id="app" class="hidden">
+      <header class="hero">
+        <div class="hero-text">
+          <p class="eyebrow">Film Date Sync</p>
+          <h1>Match film scans to iPhone time</h1>
+          <p class="subtitle">
+            Build a timeline using your iPhone photos, then drop film scans into place.
+          </p>
+        </div>
+        <div class="hero-card">
+          <div class="hero-card-row">
+            <span class="hero-label">Workflow</span>
+            <span class="hero-value">Upload → Anchor → Match → Rename → Export</span>
+          </div>
+          <div class="hero-card-row">
+            <span class="hero-label">Privacy</span>
+            <span class="hero-value">100% browser-based, no server uploads</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Step 1: Upload Photos -->
+      <section id="upload-section" class="step">
+        <div class="step-header">
+          <h2>Step 1: Upload Photos</h2>
+          <p>Load iPhone photos with correct timestamps and film scans to sync.</p>
+        </div>
+        <div class="upload-zones">
+          <div class="upload-zone" id="iphone-zone">
+            <div class="zone-content">
+              <span class="zone-tag">Reference</span>
+              <h3>iPhone Photos</h3>
+              <p>Drop photos with correct timestamps</p>
+              <input type="file" id="iphone-input" multiple accept="image/*,.tif,.tiff" />
+              <label for="iphone-input" class="upload-btn">Choose Files</label>
+            </div>
+            <div class="photo-count" id="iphone-count">0 photos loaded</div>
+          </div>
+
+          <div class="upload-zone" id="film-zone">
+            <div class="zone-content">
+              <span class="zone-tag">To Sync</span>
+              <h3>Film Photos</h3>
+              <p>Drop scanned photos to add timestamps</p>
+              <input type="file" id="film-input" multiple accept="image/*,.tif,.tiff" />
+              <label for="film-input" class="upload-btn">Choose Files</label>
+            </div>
+            <div class="photo-count" id="film-count">0 photos loaded</div>
+          </div>
+        </div>
+
+        <div class="thumbnails-container">
+          <div class="thumbnail-section">
+            <h4>iPhone Photos</h4>
+            <div id="iphone-thumbnails" class="thumbnails"></div>
+          </div>
+          <div class="thumbnail-section">
+            <h4>Film Photos</h4>
+            <div id="film-thumbnails" class="thumbnails"></div>
+          </div>
+        </div>
+
+        <button id="proceed-to-range" class="primary-btn" disabled>
+          Continue to Range Selection
+        </button>
+      </section>
+
+      <!-- Step 2: Set Time Range -->
+      <section id="range-section" class="step hidden">
+        <div class="step-header">
+          <h2>Step 2: Set Time Range</h2>
+          <p>
+            Select the first and last film photos, then match them to iPhone photos to define the time range.
+          </p>
+        </div>
+
+        <div class="range-selection">
+          <div class="anchor-pair">
+            <div class="anchor-label">Start Anchor</div>
+            <div class="anchor-slots">
+              <div class="anchor-slot" id="start-iphone-slot">
+                <span class="placeholder">Click an iPhone photo</span>
+              </div>
+              <span class="arrow">→</span>
+              <div class="anchor-slot" id="start-film-slot">
+                <span class="placeholder">Click a film photo</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="anchor-pair">
+            <div class="anchor-label">End Anchor</div>
+            <div class="anchor-slots">
+              <div class="anchor-slot" id="end-iphone-slot">
+                <span class="placeholder">Click an iPhone photo</span>
+              </div>
+              <span class="arrow">→</span>
+              <div class="anchor-slot" id="end-film-slot">
+                <span class="placeholder">Click a film photo</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="range-photos">
+          <div class="range-photo-section">
+            <h4>iPhone Photos (click to select timestamp)</h4>
+            <div id="range-iphone-photos" class="selectable-photos"></div>
+          </div>
+          <div class="range-photo-section">
+            <h4>Film Photos (click to match)</h4>
+            <div id="range-film-photos" class="selectable-photos"></div>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button id="back-to-upload" class="secondary-btn">Back</button>
+          <button id="proceed-to-timeline" class="primary-btn" disabled>
+            Continue to Timeline
+          </button>
+        </div>
+      </section>
+
+      <!-- Step 3: Timeline Matching -->
+      <section id="timeline-section" class="step hidden">
+        <div class="step-header">
+          <h2>Step 3: Match Photos on Timeline</h2>
+          <p>Drag film photos to match their closest iPhone neighbors.</p>
+        </div>
+
+        <div class="timeline-controls">
+          <button id="auto-match-btn" class="secondary-btn">
+            Auto-Match All
+          </button>
+          <div class="match-stats">
+            <span id="matched-count">0</span> / <span id="total-film-count">0</span> matched
+          </div>
+        </div>
+
+        <div id="timeline-container">
+          <div id="timeline">
+            <div id="timeline-track"></div>
+          </div>
+        </div>
+
+        <div id="unmatched-film">
+          <h4>Unmatched Film Photos</h4>
+          <div id="unmatched-photos" class="draggable-photos"></div>
+        </div>
+
+        <div class="button-row">
+          <button id="back-to-range" class="secondary-btn">Back</button>
+          <button id="proceed-to-rename" class="primary-btn">
+            Continue to Rename
+          </button>
+        </div>
+      </section>
+
+      <!-- Step 4: Rename Files -->
+      <section id="rename-section" class="step hidden">
+        <div class="step-header">
+          <h2>Step 4: Rename Files</h2>
+          <p>Customize output filenames with a prefix and sequential numbering.</p>
+        </div>
+
+        <div class="rename-config">
+          <div class="rename-fields">
+            <div class="rename-field">
+              <label for="rename-prefix">Filename Prefix</label>
+              <input type="text" id="rename-prefix" placeholder="e.g. vacation_paris" />
+            </div>
+            <div class="rename-field">
+              <label for="rename-start">Starting Number</label>
+              <input type="number" id="rename-start" value="1" min="1" />
+            </div>
+          </div>
+
+          <div class="rename-preview">
+            <h4>Preview</h4>
+            <div id="rename-preview-list"></div>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button id="back-to-timeline" class="secondary-btn">Back</button>
+          <button id="proceed-to-export" class="primary-btn">
+            Continue to Export
+          </button>
+        </div>
+      </section>
+
+      <!-- Step 5: Export -->
+      <section id="export-section" class="step hidden">
+        <div class="step-header">
+          <h2>Step 5: Review and Export</h2>
+          <p>Confirm timestamps and download updated film photos.</p>
+        </div>
+
+        <div id="export-preview">
+          <table id="export-table">
+            <thead>
+              <tr>
+                <th>Output Filename</th>
+                <th>Assigned DateTime</th>
+                <th>Matched To</th>
+                <th>Method</th>
+              </tr>
+            </thead>
+            <tbody id="export-table-body"></tbody>
+          </table>
+        </div>
+
+        <div class="button-row">
+          <button id="back-to-rename" class="secondary-btn">Back</button>
+          <button id="export-btn" class="primary-btn export-btn">
+            Download Photos with Updated Metadata
+          </button>
+          <button id="new-roll-btn" class="secondary-btn">
+            Process Another Roll
+          </button>
+        </div>
+
+        <div id="export-progress" class="hidden">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+          <span id="progress-text">Processing...</span>
+        </div>
+      </section>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
