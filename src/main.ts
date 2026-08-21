@@ -350,6 +350,7 @@ const createThumb = (photo: PhotoItem, extra?: string, lazy = true) => {
   const label = document.createElement("div");
   label.className = "thumb-label";
   label.textContent = extra ?? photo.name;
+  label.title = extra ?? photo.name;
   wrapper.appendChild(img);
   wrapper.appendChild(fallback);
   wrapper.appendChild(label);
@@ -578,6 +579,7 @@ const createFilmCard = (photo: PhotoItem) => {
   const label = document.createElement("div");
   label.className = "film-card-label";
   label.textContent = photo.name;
+  label.title = photo.name;
   card.appendChild(img);
   card.appendChild(fallback);
   card.appendChild(label);
