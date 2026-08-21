@@ -1,0 +1,23 @@
+---
+description: Swiss editorial visual system for Blix
+globs: index.html,src/style.css
+alwaysApply: false
+---
+
+# Blix UI
+
+Light-only Swiss editorial. Tokens in `src/style.css`:
+
+- Paper `#f4f2ee`, ink `#111111`, hairline `#e6e4df`
+- One accent: signal red `#e6322b` (mark, current step, primary CTAs)
+- Type: Instrument Sans (UI), IBM Plex Mono (steps, filenames, EXIF, stats)
+- Radius 0–2px. Borders, not shadows. No glows, blobs, or gradient orbs.
+
+Do not:
+
+- Add emoji as icons
+- Reintroduce indigo, sage, or dark-SaaS chrome
+- Wrap every section in a floating card
+- Use film-strip / clock pictograms (the mark is a geometric **B**)
+
+Keep existing element ids. Restyle with classes; do not rebuild the wizard in a new framework.

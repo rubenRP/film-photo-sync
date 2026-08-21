@@ -1,66 +1,61 @@
-# Film Photo Sync
+# Blix
 
 <p align="center">
-  <img src="public/logo.png" alt="Film Photo Sync" width="120" />
+  <img src="public/logo.png" alt="Blix" width="96" />
 </p>
 
 <p align="center">
-  <strong>Sync dates and GPS coordinates from iPhone photos to film scans</strong>
+  <strong>Match film scans to iPhone time and place.</strong>
 </p>
 
 <p align="center">
-  Perfect for organizing your analog photography in Apple Photos with accurate timestamps and locations.
+  A browser tool for analog photographers: embed timestamps and GPS from iPhone photos onto film scans so they sort and map correctly in Apple Photos.
 </p>
 
 ---
 
 ## Features
 
-- **Timeline Matching** — Use iPhone photos as time anchors to accurately date your film scans
-- **GPS Coordinates** — Transfer location data so your photos appear on the map in Apple Photos
-- **TIFF Support** — Works with high-quality TIFF scans, preserving original image data
-- **Batch Renaming** — Rename files with custom prefixes and sequential numbering
-- **100% Private** — All processing happens in your browser. No uploads to any server
-- **Multiple Rolls** — Process multiple film rolls in one session with the same iPhone reference photos
+- **Timeline matching** — Use iPhone photos as time anchors to date a roll of film
+- **GPS coordinates** — Transfer location data so scans appear on the map in Apple Photos
+- **TIFF support** — Works with high-quality TIFF scans, preserving original image data
+- **Batch renaming** — Optional prefix and sequential numbering on export
+- **Private by design** — Photos are processed in the browser. Nothing is uploaded.
+- **Multiple rolls** — Process several rolls in one session, reusing the same iPhone reference set
 
-## How It Works
+## How it works
 
-1. **Upload** — Add your iPhone photos (with correct timestamps) and film scans
-2. **Anchor** — Select the first and last film photos and match them to corresponding iPhone photos
-3. **Match** — The app interpolates timestamps for all photos in between
-4. **Rename** — Optionally add a filename prefix and numbering
-5. **Export** — Download a ZIP with your film scans containing embedded EXIF data
+1. **Upload** — Add iPhone photos (accurate timestamps) and film scans
+2. **Anchors** — Pair the first and last frames of the roll with iPhone photos
+3. **Timeline** — Match remaining frames, or let Blix interpolate between anchors
+4. **Rename** — Optionally set a filename prefix and starting number
+5. **Export** — Download a ZIP with EXIF (and GPS) written into each scan
 
-## Tech Stack
+## Tech stack
 
-- **Frontend**: TypeScript, Vite, Vanilla DOM
-- **EXIF Processing**: 
-  - [exifr](https://github.com/MikeKovarik/exifr) — Reading EXIF from iPhone photos
-  - [piexifjs](https://github.com/hMatoba/piexifjs) — Writing EXIF to JPEGs
+- **App**: TypeScript, Vite, vanilla DOM
+- **EXIF**
+  - [exifr](https://github.com/MikeKovarik/exifr) — read EXIF from iPhone photos
+  - [piexifjs](https://github.com/hMatoba/piexifjs) — write EXIF to JPEGs
   - Custom TIFF IFD writer for TIFF metadata
-- **Image Processing**: [UTIF](https://github.com/nicksrandall/utif) for TIFF decoding
-- **Deployment**: Vercel Edge Functions for authentication
+- **Images**: [UTIF](https://github.com/nicksrandall/utif) for TIFF decode
+- **Export**: [JSZip](https://github.com/Stuk/jszip)
+- **Deploy**: static Vite site (Vercel or any static host)
 
-## Getting Started
+## Getting started
 
 ### Prerequisites
 
 - Node.js 18+
-- npm or yarn
+- npm
 
 ### Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/film-photo-sync.git
+git clone https://github.com/rubenRP/film-photo-sync.git
 cd film-photo-sync
 
-# Install dependencies
 npm install
-
-# Create environment file
-cp .env.example .env
-# Edit .env and set your AUTH_PASSWORD
 ```
 
 ### Development
@@ -69,7 +64,7 @@ cp .env.example .env
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) in your browser.
+Open [http://localhost:5173](http://localhost:5173).
 
 ### Build
 
@@ -79,59 +74,42 @@ npm run build
 
 ## Deployment
 
-### Vercel (Recommended)
+### Vercel
 
-1. Push your code to GitHub
-2. Import the repository in [Vercel](https://vercel.com)
-3. Add the environment variable:
-   - `AUTH_PASSWORD`: Your chosen password for the login page
-4. Deploy!
+1. Push the repository to GitHub
+2. Import it in [Vercel](https://vercel.com)
+3. Deploy
 
-The `api/auth.ts` Edge Function handles authentication, keeping your password secure on the server.
+The app is a static site. Image files never leave the browser.
 
-### Environment Variables
+## Usage
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `AUTH_PASSWORD` | Password for the login page | Yes |
+### Preparing photos
 
-## Usage Guide
+1. **iPhone** — Export photos from the same period as the roll. They need accurate timestamps; GPS is used when present.
+2. **Film scans** — JPEG (`.jpg` / `.jpeg`), TIFF (`.tif` / `.tiff`, recommended), or PNG.
 
-### Preparing Your Photos
+### Tips
 
-1. **iPhone Photos**: Export photos from the same time period as your film roll. These should have accurate timestamps and GPS data.
-
-2. **Film Scans**: Your scanned film photos. Supported formats:
-   - JPEG (.jpg, .jpeg)
-   - TIFF (.tif, .tiff) — recommended for quality
-   - PNG (.png)
-
-### Workflow Tips
-
-- Take a photo with your iPhone at the **start** and **end** of each film roll for easy anchoring
-- The more iPhone photos you have in your timeline, the more accurate the interpolation
-- For best GPS accuracy, match film photos to iPhone photos taken at the same location
+- Photograph the start and end of each roll with the iPhone so anchors are obvious
+- More iPhone frames on the timeline generally mean better interpolation
+- For GPS, match a film frame to an iPhone photo taken at the same place
 
 ### Output
 
-Exported files will have:
-- **DateTime** — When the photo was taken
-- **DateTimeOriginal** — Original capture time
-- **DateTimeDigitized** — Digitization time (set to capture time)
-- **GPS Coordinates** — From the matched or nearest iPhone photo
+Each exported file includes:
 
-TIFF files are exported with metadata but remain uncompressed. JPEG and other formats are converted to JPEG with EXIF data.
+- **DateTime** / **DateTimeOriginal** / **DateTimeDigitized** — capture time
+- **GPS** — from the matched iPhone photo, or the nearest GPS-bearing frame by time
+
+TIFF files stay uncompressed with metadata written into the IFD. Other formats are exported as JPEG with EXIF.
+
+The download is named `blix.zip`.
+
+## Privacy
+
+Matching, interpolation, EXIF writing, and ZIP creation all run in the browser. Photos never leave this device.
 
 ## License
 
-MIT License — feel free to use and modify for your own projects.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
----
-
-<p align="center">
-  Built for film photographers who want their scans organized properly 📷
-</p>
+MIT. See [LICENSE](LICENSE).

@@ -1,0 +1,16 @@
+---
+description: Blix stack, architecture, and non-negotiable constraints
+alwaysApply: true
+---
+
+# Blix
+
+Static Vite + TypeScript SPA. Product name is **Blix** (repo may still be `film-photo-sync`).
+
+- Vanilla DOM only. Do not add a UI framework, Tailwind, or a component kit.
+- All image work stays in the browser. No server calls; no auth.
+- `index.html` ids are the contract with `src/main.ts` — do not rename them without updating both.
+- Logic lives in `src/main.ts`; styles in `src/style.css`; markup in `index.html`.
+- Export file is `blix.zip`.
+- `#auto-match-btn` is a stub (`alert`). Do not treat it as implemented.
+- Read `AGENTS.md` for types, assignment methods, and the file map.

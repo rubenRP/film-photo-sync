@@ -1,8 +1,9 @@
 declare module "piexifjs" {
-  interface ExifObject {
+  export interface ExifObject {
     "0th": Record<string | number, unknown>;
     Exif: Record<string | number, unknown>;
     GPS: Record<string | number, unknown>;
+    Interop?: Record<string | number, unknown>;
     "1st": Record<string | number, unknown>;
     thumbnail: unknown;
   }
@@ -12,10 +13,19 @@ declare module "piexifjs" {
   function insert(exifBytes: string, jpegData: string): string;
   function remove(jpegData: string): string;
 
+  const ImageIFD: Record<string, number>;
+  const ExifIFD: Record<string, number>;
+  const GPSIFD: Record<string, number>;
+  const InteropIFD: Record<string, number>;
+
   export default {
     load,
     dump,
     insert,
     remove,
+    ImageIFD,
+    ExifIFD,
+    GPSIFD,
+    InteropIFD,
   };
 }

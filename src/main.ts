@@ -4,57 +4,15 @@ import piexif from "piexifjs";
 import * as UTIF from "utif";
 import "./style.css";
 
-const loginOverlay = document.querySelector<HTMLDivElement>("#login-overlay")!;
-const loginForm = document.querySelector<HTMLFormElement>("#login-form")!;
-const loginPassword = document.querySelector<HTMLInputElement>("#login-password")!;
-const loginError = document.querySelector<HTMLParagraphElement>("#login-error")!;
-const appContainer = document.querySelector<HTMLDivElement>("#app")!;
+const landing = document.querySelector<HTMLDivElement>("#landing")!;
+const app = document.querySelector<HTMLDivElement>("#app")!;
+const startBtn = document.querySelector<HTMLButtonElement>("#start-btn")!;
 
-const SESSION_KEY = "film-sync-auth";
-
-const checkAuth = () => {
-  const isAuthenticated = sessionStorage.getItem(SESSION_KEY) === "true";
-  if (isAuthenticated) {
-    loginOverlay.classList.add("hidden");
-    appContainer.classList.remove("hidden");
-  }
-  return isAuthenticated;
-};
-
-const handleLogin = async (e: Event) => {
-  e.preventDefault();
-  loginError.classList.add("hidden");
-
-  const password = loginPassword.value;
-  if (!password) return;
-
-  try {
-    const response = await fetch("/api/auth", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    });
-
-    const data = await response.json();
-
-    if (response.ok && data.success) {
-      sessionStorage.setItem(SESSION_KEY, "true");
-      loginOverlay.classList.add("hidden");
-      appContainer.classList.remove("hidden");
-    } else {
-      loginError.textContent = data.error || "Invalid password";
-      loginError.classList.remove("hidden");
-      loginPassword.value = "";
-      loginPassword.focus();
-    }
-  } catch {
-    loginError.textContent = "Login failed. Please try again.";
-    loginError.classList.remove("hidden");
-  }
-};
-
-loginForm.addEventListener("submit", handleLogin);
-checkAuth();
+startBtn.addEventListener("click", () => {
+  landing.classList.add("hidden");
+  app.classList.remove("hidden");
+  window.scrollTo({ top: 0, behavior: "instant" });
+});
 
 type PhotoItem = {
   id: string;
@@ -195,9 +153,14 @@ const idFromFile = (file: File, index: number) =>
 const formatDate = (value?: Date) =>
   value ? dateFormatter.format(value) : "Missing";
 
+const stepIndexItems = document.querySelectorAll<HTMLElement>("[data-step-target]");
+
 const setSectionVisible = (section: HTMLElement) => {
   sections.forEach((item) => item.classList.add("hidden"));
   section.classList.remove("hidden");
+  stepIndexItems.forEach((el) => {
+    el.classList.toggle("is-current", el.dataset.stepTarget === section.id);
+  });
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
@@ -960,38 +923,112 @@ const decimalToDMS = (decimal: number): [[number, number], [number, number], [nu
 
 type GpsCoords = { latitude: number; longitude: number } | null;
 
-const createExifData = (exifDate: string, _tzOffset: string | null, gps: GpsCoords) => {
-  const zeroth: Record<string, unknown> = {};
-  const exifData: Record<string, unknown> = {};
-  const gpsData: Record<string, unknown> = {};
+const TAG_DATETIME = 306;
+const TAG_DATETIME_ORIGINAL = 36867;
+const TAG_DATETIME_DIGITIZED = 36868;
+const TAG_MAKER_NOTE = 37500;
+const TAG_USER_COMMENT = 37510;
+const TAG_GPS_LATITUDE_REF = 1;
+const TAG_GPS_LATITUDE = 2;
+const TAG_GPS_LONGITUDE_REF = 3;
+const TAG_GPS_LONGITUDE = 4;
 
-  const TAG_DATETIME = 306;
-  const TAG_DATETIME_ORIGINAL = 36867;
-  const TAG_DATETIME_DIGITIZED = 36868;
+const emptyExifObject = (): ReturnType<typeof piexif.load> => ({
+  "0th": {},
+  Exif: {},
+  GPS: {},
+  Interop: {},
+  "1st": {},
+  thumbnail: null,
+});
 
-  zeroth[TAG_DATETIME] = exifDate;
-  exifData[TAG_DATETIME_ORIGINAL] = exifDate;
-  exifData[TAG_DATETIME_DIGITIZED] = exifDate;
+const knownTagsFrom = (table: Record<string, number>) =>
+  new Set(Object.values(table));
 
-  if (gps) {
-    const TAG_GPS_LATITUDE_REF = 1;
-    const TAG_GPS_LATITUDE = 2;
-    const TAG_GPS_LONGITUDE_REF = 3;
-    const TAG_GPS_LONGITUDE = 4;
-
-    gpsData[TAG_GPS_LATITUDE_REF] = gps.latitude >= 0 ? "N" : "S";
-    gpsData[TAG_GPS_LATITUDE] = decimalToDMS(gps.latitude);
-    gpsData[TAG_GPS_LONGITUDE_REF] = gps.longitude >= 0 ? "E" : "W";
-    gpsData[TAG_GPS_LONGITUDE] = decimalToDMS(gps.longitude);
+const keepKnownTags = (
+  ifd: Record<string | number, unknown> | undefined,
+  known: Set<number>,
+): Record<number, unknown> => {
+  const next: Record<number, unknown> = {};
+  if (!ifd) {
+    return next;
   }
-
-  return { "0th": zeroth, Exif: exifData, GPS: gpsData, "1st": {}, thumbnail: null };
+  for (const [key, value] of Object.entries(ifd)) {
+    const tag = Number(key);
+    if (Number.isFinite(tag) && known.has(tag)) {
+      next[tag] = value;
+    }
+  }
+  return next;
 };
 
-const writeExifToJpeg = (jpegDataUrl: string, exifDate: string, tzOffset: string | null, gps: GpsCoords): string => {
-  const exifObj = createExifData(exifDate, tzOffset, gps);
-  const exifBytes = piexif.dump(exifObj);
-  return piexif.insert(exifBytes, jpegDataUrl);
+const loadJpegExif = (jpegDataUrl: string): ReturnType<typeof piexif.load> => {
+  try {
+    const loaded = piexif.load(jpegDataUrl);
+    return {
+      "0th": loaded["0th"] ?? {},
+      Exif: loaded.Exif ?? {},
+      GPS: loaded.GPS ?? {},
+      Interop: loaded.Interop ?? {},
+      "1st": loaded["1st"] ?? {},
+      thumbnail: loaded.thumbnail ?? null,
+    };
+  } catch {
+    return emptyExifObject();
+  }
+};
+
+const applyDateAndGps = (
+  exifObj: ReturnType<typeof piexif.load>,
+  exifDate: string,
+  gps: GpsCoords,
+) => {
+  exifObj["0th"][TAG_DATETIME] = exifDate;
+  exifObj.Exif[TAG_DATETIME_ORIGINAL] = exifDate;
+  exifObj.Exif[TAG_DATETIME_DIGITIZED] = exifDate;
+
+  if (gps) {
+    exifObj.GPS = {
+      [piexif.GPSIFD.GPSVersionID]: [2, 3, 0, 0],
+      [TAG_GPS_LATITUDE_REF]: gps.latitude >= 0 ? "N" : "S",
+      [TAG_GPS_LATITUDE]: decimalToDMS(gps.latitude),
+      [TAG_GPS_LONGITUDE_REF]: gps.longitude >= 0 ? "E" : "W",
+      [TAG_GPS_LONGITUDE]: decimalToDMS(gps.longitude),
+    };
+  }
+};
+
+const sanitizeExifForDump = (
+  exifObj: ReturnType<typeof piexif.load>,
+): ReturnType<typeof piexif.load> => ({
+  "0th": keepKnownTags(exifObj["0th"], knownTagsFrom(piexif.ImageIFD)),
+  Exif: keepKnownTags(exifObj.Exif, knownTagsFrom(piexif.ExifIFD)),
+  GPS: keepKnownTags(exifObj.GPS, knownTagsFrom(piexif.GPSIFD)),
+  Interop: keepKnownTags(exifObj.Interop, knownTagsFrom(piexif.InteropIFD)),
+  "1st": keepKnownTags(exifObj["1st"], knownTagsFrom(piexif.ImageIFD)),
+  thumbnail: exifObj.thumbnail ?? null,
+});
+
+const dumpExifBytes = (exifObj: ReturnType<typeof piexif.load>): string => {
+  const sanitized = sanitizeExifForDump(exifObj);
+  try {
+    return piexif.dump(sanitized);
+  } catch {
+    delete sanitized.Exif[TAG_MAKER_NOTE];
+    delete sanitized.Exif[TAG_USER_COMMENT];
+    return piexif.dump(sanitized);
+  }
+};
+
+const writeExifToJpeg = (
+  jpegDataUrl: string,
+  exifDate: string,
+  _tzOffset: string | null,
+  gps: GpsCoords,
+): string => {
+  const exifObj = loadJpegExif(jpegDataUrl);
+  applyDateAndGps(exifObj, exifDate, gps);
+  return piexif.insert(dumpExifBytes(exifObj), jpegDataUrl);
 };
 
 const imageToJpegDataUrl = async (file: File, quality = 0.95): Promise<string> => {
@@ -1438,7 +1475,7 @@ const exportPhotos = async () => {
     const url = URL.createObjectURL(zipBlob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "film-photo-sync.zip";
+    link.download = "blix.zip";
     link.click();
     URL.revokeObjectURL(url);
   } catch (error) {

@@ -4,91 +4,112 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Sync dates and GPS coordinates from iPhone photos to film scans. Perfect for organizing your analog photography in Apple Photos." />
-    <meta name="theme-color" content="#0f0f10" />
-    <title>Film Photo Sync - Match Film Scans to iPhone Timestamps</title>
+    <meta
+      name="description"
+      content="Blix matches iPhone timestamps and GPS onto film scans in your browser. Organize analog photography in Apple Photos."
+    />
+    <meta name="theme-color" content="#f4f2ee" />
+    <title>Blix — Match film scans to iPhone time</title>
   </head>
   <body>
-    <div id="login-overlay" class="login-overlay">
+    <div id="landing">
       <div class="landing-container">
         <div class="landing-hero">
-          <img src="/logo.png" alt="Film Photo Sync" class="landing-logo" />
-          <h1>Film Photo Sync</h1>
+          <img src="/logo.svg" alt="" class="landing-logo" width="48" height="48" />
+          <h1>Blix</h1>
           <p class="landing-tagline">
-            Sync dates and GPS from your iPhone to film scans
+            Match film scans to iPhone time and place.
+          </p>
+          <p class="landing-lede">
+            Film frames have no clock. Blix copies timestamps and GPS from
+            iPhone photos onto your scans so they sort and map correctly in
+            Apple Photos. Everything stays in this browser.
           </p>
         </div>
 
-        <div class="landing-features">
-          <div class="feature-card">
-            <div class="feature-icon">📷</div>
-            <h3>Timeline Matching</h3>
-            <p>Use iPhone photos as time anchors to accurately date your film scans</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">📍</div>
-            <h3>GPS Coordinates</h3>
-            <p>Transfer location data so your photos appear on the map in Apple Photos</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">🎞️</div>
-            <h3>TIFF Support</h3>
-            <p>Works with high-quality TIFF scans, preserving original image data</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">🔒</div>
-            <h3>100% Private</h3>
-            <p>All processing happens in your browser. No uploads to any server</p>
-          </div>
-        </div>
+        <section class="landing-how" aria-labelledby="how-heading">
+          <h2 id="how-heading">How it works</h2>
+          <ol class="landing-steps">
+            <li>
+              <span class="step-num">01</span>
+              <div>
+                <h3>Upload</h3>
+                <p>
+                  Add iPhone photos from the same period as the roll, plus your
+                  film scans (JPEG or TIFF).
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="step-num">02</span>
+              <div>
+                <h3>Anchors</h3>
+                <p>
+                  Pair the first and last frames with iPhone shots so Blix knows
+                  when the roll started and ended.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="step-num">03</span>
+              <div>
+                <h3>Timeline</h3>
+                <p>
+                  Match remaining frames on the iPhone timeline. Unmatched
+                  photos get interpolated times between their neighbors.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="step-num">04</span>
+              <div>
+                <h3>Rename</h3>
+                <p>
+                  Optionally set a filename prefix and starting number before
+                  export.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="step-num">05</span>
+              <div>
+                <h3>Export</h3>
+                <p>
+                  Download a ZIP with timestamps and GPS written into each scan.
+                </p>
+              </div>
+            </li>
+          </ol>
+        </section>
 
-        <div class="login-card">
-          <h2>Sign In</h2>
-          <p>Enter password to access the app</p>
-          <form id="login-form">
-            <input
-              type="password"
-              id="login-password"
-              placeholder="Password"
-              autocomplete="current-password"
-              required
-            />
-            <button type="submit" class="primary-btn">Continue</button>
-          </form>
-          <p id="login-error" class="login-error hidden">Invalid password</p>
-        </div>
+        <button type="button" id="start-btn" class="primary-btn">
+          Get started
+        </button>
 
         <footer class="landing-footer">
-          <p>Built for film photographers who want their scans organized properly</p>
+          <p>Client-side only. Photos never leave this device.</p>
         </footer>
       </div>
     </div>
 
     <div id="app" class="hidden">
-      <header class="hero">
-        <div class="hero-text">
-          <p class="eyebrow">Film Date Sync</p>
-          <h1>Match film scans to iPhone time</h1>
-          <p class="subtitle">
-            Build a timeline using your iPhone photos, then drop film scans into place.
-          </p>
+      <header class="app-bar">
+        <div class="brand">
+          <img src="/logo.svg" alt="" class="brand-mark" width="24" height="24" />
+          <span class="brand-name">Blix</span>
         </div>
-        <div class="hero-card">
-          <div class="hero-card-row">
-            <span class="hero-label">Workflow</span>
-            <span class="hero-value">Upload → Anchor → Match → Rename → Export</span>
-          </div>
-          <div class="hero-card-row">
-            <span class="hero-label">Privacy</span>
-            <span class="hero-value">100% browser-based, no server uploads</span>
-          </div>
-        </div>
+        <nav class="step-index" aria-label="Workflow">
+          <span class="step-index-item is-current" data-step-target="upload-section">01</span>
+          <span class="step-index-item" data-step-target="range-section">02</span>
+          <span class="step-index-item" data-step-target="timeline-section">03</span>
+          <span class="step-index-item" data-step-target="rename-section">04</span>
+          <span class="step-index-item" data-step-target="export-section">05</span>
+        </nav>
       </header>
 
-      <!-- Step 1: Upload Photos -->
       <section id="upload-section" class="step">
         <div class="step-header">
-          <h2>Step 1: Upload Photos</h2>
+          <h2><span class="step-num">01</span> Upload</h2>
           <p>Load iPhone photos with correct timestamps and film scans to sync.</p>
         </div>
         <div class="upload-zones">
@@ -127,14 +148,13 @@
         </div>
 
         <button id="proceed-to-range" class="primary-btn" disabled>
-          Continue to Range Selection
+          Continue to Anchors
         </button>
       </section>
 
-      <!-- Step 2: Set Time Range -->
       <section id="range-section" class="step hidden">
         <div class="step-header">
-          <h2>Step 2: Set Time Range</h2>
+          <h2><span class="step-num">02</span> Anchors</h2>
           <p>
             Select the first and last film photos, then match them to iPhone photos to define the time range.
           </p>
@@ -187,10 +207,9 @@
         </div>
       </section>
 
-      <!-- Step 3: Timeline Matching -->
       <section id="timeline-section" class="step hidden">
         <div class="step-header">
-          <h2>Step 3: Match Photos on Timeline</h2>
+          <h2><span class="step-num">03</span> Timeline</h2>
           <p>Drag film photos to match their closest iPhone neighbors.</p>
         </div>
 
@@ -222,10 +241,9 @@
         </div>
       </section>
 
-      <!-- Step 4: Rename Files -->
       <section id="rename-section" class="step hidden">
         <div class="step-header">
-          <h2>Step 4: Rename Files</h2>
+          <h2><span class="step-num">04</span> Rename</h2>
           <p>Customize output filenames with a prefix and sequential numbering.</p>
         </div>
 
@@ -255,10 +273,9 @@
         </div>
       </section>
 
-      <!-- Step 5: Export -->
       <section id="export-section" class="step hidden">
         <div class="step-header">
-          <h2>Step 5: Review and Export</h2>
+          <h2><span class="step-num">05</span> Export</h2>
           <p>Confirm timestamps and download updated film photos.</p>
         </div>
 
